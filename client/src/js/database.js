@@ -1,21 +1,32 @@
-import { openDB } from 'idb';
+const butInstall = document.getElementById('buttonInstall');
 
-const initdb = async () =>
-  openDB('jate', 1, {
-    upgrade(db) {
-      if (db.objectStoreNames.contains('jate')) {
-        console.log('jate database already exists');
-        return;
-      }
-      db.createObjectStore('jate', { keyPath: 'id', autoIncrement: true });
-      console.log('jate database created');
-    },
-  });
+// Logic for installing the PWA
+// TODO: Add an event handler to the `beforeinstallprompt` event
+window.addEventListener('beforeinstallprompt', (event) => {
 
-// TODO: Add logic to a method that accepts some content and adds it to the database
-export const putDb = async (content) => console.error('putDb not implemented');
+    // Store the triggered Events
+    window.deferredPrompt = event;
 
-// TODO: Add logic for a method that gets all the content from the database
-export const getDb = async () => console.error('getDb not implemented');
+    // Remove the hidden class from the button.
+    butInstall.classList.toggle('hidden', false);
+});
 
-initdb();
+// TODO: Implement a click event handler on the `butInstall` element
+butInstall.addEventListener('click', async () => {
+    
+    const promptEvent = window.deferredPrompt;
+
+    if (!promptEvent) {
+     return;
+    }
+  
+    // Show prompt
+    promptEvent.prompt();
+});
+
+// TODO: Add an handler for the `appinstalled` event
+window.addEventListener('appinstalled', (event) => {
+      // Clear prompt
+  window.deferredPrompt = null;
+});
+
