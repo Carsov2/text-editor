@@ -1,32 +1,43 @@
-const butInstall = document.getElementById('buttonInstall');
+import { openDB } from 'idb';
 
-// Logic for installing the PWA
-// TODO: Add an event handler to the `beforeinstallprompt` event
-window.addEventListener('beforeinstallprompt', (event) => {
+const initdb = async () =>
+  openDB('jate', 1, {
+    upgrade(db) {
+      if (db.objectStoreNames.contains('jate')) {
+        console.log('jate database already exists');
+        return;
+      }
+      db.createObjectStore('jate', { keyPath: 'id', autoIncrement: true });
+      console.log('jate database created');
+    },
+  });
 
-    // Store the triggered Events
-    window.deferredPrompt = event;
+// TODO: Add logic to a method that accepts some content and adds it to the database
+export const putDb = async (content) => {
+  console.log('Put to the database');
+  // set a variable to open the jate database
+  const jateDb = await openDB('jate', 1);
+  // start a readwrite transaction on the database
+  const tx = jateDb.transaction('jate', 'readwrite');
+  // pull the info from the table
+  const store = tx.objectStore('jate');
+  // update and add info to the table
+  const request = store.put({ id: 1, content });
+  const result = await request;
+  console.log('Data saved to the database', result);
+};
 
-    // Remove the hidden class from the button.
-    butInstall.classList.toggle('hidden', false);
-});
+// TODO: Add logic for a method that gets all the content from the database
+export const getDb = async () => {
+  console.log('GET all from the database');
+  const jateDb = await openDB('jate', 1);
+  const tx = jateDb.transaction('jate', 'readonly');
+  const store = tx.objectStore('jate');
+  // retrieves cached info from the table to populate on the editor
+  const request = store.getAll();
+  const result = await request;
+  console.log('result.value', result);
+  return result?.value;
+};
 
-// TODO: Implement a click event handler on the `butInstall` element
-butInstall.addEventListener('click', async () => {
-    
-    const promptEvent = window.deferredPrompt;
-
-    if (!promptEvent) {
-     return;
-    }
-  
-    // Show prompt
-    promptEvent.prompt();
-});
-
-// TODO: Add an handler for the `appinstalled` event
-window.addEventListener('appinstalled', (event) => {
-      // Clear prompt
-  window.deferredPrompt = null;
-});
-
+initdb();
